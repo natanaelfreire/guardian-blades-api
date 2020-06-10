@@ -17,7 +17,19 @@ class UsersController {
 
     await knex('users').insert(user);
 
-    return response.json({ message: "new user created!" });
+    return response.json({ message: "New user created!" });
+  }
+
+  async show(request: Request, response: Response) {
+    const { id } = request.params;
+
+    const user = await knex('users').where('id', id).first();
+
+    if (!user) {
+      return response.status(400).json({ message: 'User not found.' });
+    }
+
+    return response.json(user);
   }
 }
 
