@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import knex from '../database/connection';
+import crypto from 'crypto';
 
 class UsersController {
   async create(request: Request, response: Response) {
@@ -20,16 +21,24 @@ class UsersController {
     return response.json({ message: "New user created!" });
   }
 
-  async show(request: Request, response: Response) {
-    const { id } = request.params;
+  async login(request: Request, response: Response) {
+    const { name, password } = request.body;
 
-    const user = await knex('users').where('id', id).first();
+    const user = await knex('users').where('name', String(name)).first();
 
     if (!user) {
       return response.status(400).json({ message: 'User not found.' });
     }
 
-    return response.json(user);
+    if (password !== user.password) {
+      return response.status(400).json({ message: 'Wrong password.' });
+    }
+
+    const hash = crypto.randomBytes(6).toString('hex');
+
+    await knex('users').where('id', user.id).update({ token: `${hash}` });
+    
+    return response.json(user.token);
   }
 }
 
