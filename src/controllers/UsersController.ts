@@ -10,15 +10,18 @@ class UsersController {
       password,
     } = request.body;
 
+    const hash = crypto.randomBytes(6).toString('hex');
+
     const user = {
       name,
       email,
-      password
+      password,
+      token: hash
     }
 
     await knex('users').insert(user);
 
-    return response.json({ message: "New user created!" });
+    return response.status(200).json({ token: hash });
   }
 
   async login(request: Request, response: Response) {
@@ -38,15 +41,22 @@ class UsersController {
 
     await knex('users').where('id', user.id).update({ token: `${hash}` });
     
-    return response.json({...user, token: hash});
+    return response.status(200).json({ token: hash });
   }
 
   async find(request: Request, response: Response) {
-    const { token } = request.query;
+    const data = request.query;
+
+    const key = Object.keys(data)[0];
+    const value = Object.values(data)[0];
     
-    const user = await knex('users').where('token', String(token)).first();
+    const user = await knex('users').where(`${key}`, String(value)).first();
+
+    if (!user) {
+      return response.status(203).json({ message: 'User not found.' });
+    }
     
-    return response.json(user);
+    return response.status(200).json(user);
   }
 }
 
