@@ -13,7 +13,8 @@ class UsersController {
     const hash = crypto.randomBytes(6).toString('hex');
 
     const user = {
-      name,
+      name: name.toUpperCase(),
+      nameInGame: name,
       email,
       password,
       token: hash
@@ -27,7 +28,7 @@ class UsersController {
   async login(request: Request, response: Response) {
     const { name, password } = request.body;
 
-    const user = await knex('users').where('name', String(name)).first();
+    const user = await knex('users').where('name', name.toUpperCase()).first();
 
     if (!user) {
       return response.status(203).json({ message: 'User not found.' });
@@ -48,8 +49,10 @@ class UsersController {
     const data = request.query;
 
     const key = Object.keys(data)[0];
-    const value = Object.values(data)[0];
-    
+    const value = Object.keys(data)[0] === 'name' ? 
+      String(Object.values(data)[0]).toUpperCase() :
+      Object.keys(data)[0];
+
     const user = await knex('users').where(`${key}`, String(value)).first();
 
     if (!user) {
