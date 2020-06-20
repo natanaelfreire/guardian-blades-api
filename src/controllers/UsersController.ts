@@ -51,7 +51,7 @@ class UsersController {
     const key = Object.keys(data)[0];
     const value = Object.keys(data)[0] === 'name' ? 
       String(Object.values(data)[0]).toUpperCase() :
-      Object.keys(data)[0];
+      Object.values(data)[0];
 
     const user = await knex('users').where(`${key}`, String(value)).first();
 
